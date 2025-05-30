@@ -134,3 +134,23 @@ def test_resolve():
     # import pprint
     #
     # pprint.pp(resolution_context.samplings_made, indent=2)
+
+
+if __name__ == "__main__":
+    pipeline = nosBench()
+
+    try:
+        resolved_pipeline, resolution_context = space.resolve(pipeline)
+    except RecursionError:
+        pytest.xfail("XFAIL due to too much recursion.")
+        raise
+
+    p = resolved_pipeline.P
+    p_config_string = space.convert_operation_to_string(p)
+    assert p_config_string
+    pretty_config = config_string.ConfigString(p_config_string).pretty_format()
+    assert pretty_config
+
+    print()
+    print("Config string:")
+    print(pretty_config)
