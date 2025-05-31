@@ -59,6 +59,7 @@ def nosbench_neps_demo(
     optimizer_name,
     max_evaluations_total=100,
     rep_suffix="",
+    summary_print_config=False,
     nosbench_dict={
         "max_program_length": MAX_PROGRAM_LENGTH,
         "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
@@ -75,14 +76,7 @@ def nosbench_neps_demo(
     },
 ):
     optimizer.__name__ = optimizer_name  # Needed by NEPS later.
-
-    
-
     root_directory = f"results/nosbench_{optimizer.__name__}{'_'+rep_suffix if rep_suffix else ''}"
-
-    print(f"Running for root directory: {root_directory}")
-    print(f"Using optimizer: {optimizer_name}")
-    print(f"For {max_evaluations_total} evaluations in total.")
     pprint.pprint(nosbench_dict)
 
     neps.run(
@@ -98,7 +92,7 @@ def nosbench_neps_demo(
         overwrite_working_directory=True,
     )
 
-    neps.status(root_directory, print_summary=True)
+    neps.status(root_directory, print_summary=True, print_config=summary_print_config)
 
 
 if __name__ == "__main__":
@@ -157,19 +151,25 @@ if __name__ == "__main__":
         action="store_false",
         help="Use epoch fidelity in the Nosbench space.",
     )
+    parser.add_argument(
+        "-spc", "--summary_print_config",
+        action="store_true",
+        help="Print the best configuration after the run.",
+    )
     args = parser.parse_args()
 
     neps_dict = {
         "max_evaluations_total": args.max_evaluations_total,
         "optimizer": args.optimizer,
         "directory_suffix": args.rep_suffix,
+        "summary_print_config": args.summary_print_config,
     }
     nosbench_dict = {
         "max_program_length": args.program_length,
         "max_epochs_per_config": args.epochs,
         "available_variable_slots": args.available_variable_slots,
-        "epoch_fidelity"args.epoch_fidelity,
-        "benchmark": nosbench.ToyBenchmark() if args.benchmark == "ToyBenchmark" else nosbench.NosBench() if args.benchmark == "NosBench" else nosbench.ToyBenchmark(),
+        "epoch_fidelity": args.epoch_fidelity,
+        "benchmark": nosbench.ToyBenchmark() if args.benchmark == "ToyBenchmark" else nosbench.NOSBench() if args.benchmark == "NosBench" else nosbench.ToyBenchmark(),
     }
     pipeline_space = Nosbench_space(nosbench_dict=nosbench_dict)
     pipeline_space_int = Nosbench_space_int(nosbench_dict=nosbench_dict)
@@ -179,5 +179,6 @@ if __name__ == "__main__":
         *optimizers_dict[neps_dict["optimizer"]],
         max_evaluations_total=neps_dict["max_evaluations_total"],
         rep_suffix=neps_dict["directory_suffix"],
+        summary_print_config=neps_dict["summary_print_config"],
         nosbench_dict=nosbench_dict,
     )

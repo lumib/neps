@@ -99,7 +99,7 @@ class Summary:
         """Number of trials that are pending."""
         return len(self.by_state[State.PENDING])
 
-    def formatted(self) -> str:
+    def formatted(self, with_config: bool = True) -> str:
         """Return a formatted string of the summary."""
         state_summary = "\n".join(
             f"    {state.name.lower()}: {len(trials)}"
@@ -116,11 +116,11 @@ class Summary:
             best_trial, best_objective_to_minimize = self.best
             best_summary = (
                 f"# Best Found (config {best_trial.metadata.id}):"
-                "\n"
-                f"\n    objective_to_minimize: {best_objective_to_minimize}"
-                f"\n    config: {best_trial.config}"
-                f"\n    path: {best_trial.metadata.location}"
-            )
+                f"\n"
+                f"\n    objective_to_minimize: {best_objective_to_minimize}")
+            best_summary += f"\n    config: {best_trial.config}" if with_config else ""
+            best_summary += f"\n    path: {best_trial.metadata.location}"
+
             assert best_trial.report is not None
             if best_trial.report.cost is not None:
                 best_summary += f"\n    cost: {best_trial.report.cost}"
@@ -172,6 +172,7 @@ def status(
     root_directory: str | Path,
     *,
     print_summary: bool = False,
+    print_config: bool = True,
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Print status information of a neps run and return results.
 
@@ -186,7 +187,7 @@ def status(
     summary = Summary.from_directory(root_directory)
 
     if print_summary:
-        print(summary.formatted())
+        print(summary.formatted(with_config=print_config))
 
     df = summary.df()
 
