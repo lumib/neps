@@ -16,11 +16,13 @@ class Nosbench_space(space.Pipeline):
             "max_program_length": MAX_PROGRAM_LENGTH,
             "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
             "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
+            "epoch_fidelity": True,
         },
     ):
         self.max_program_length = nosbench_dict["max_program_length"]
         self.max_epochs_per_config = nosbench_dict["max_epochs_per_config"]
         self.available_variable_slots = nosbench_dict["available_variable_slots"]
+        self.epoch_fidelity = nosbench_dict["epoch_fidelity"]
 
         self._UNARY_FUN = space.Categorical(
             choices=(
@@ -113,8 +115,8 @@ class Nosbench_space(space.Pipeline):
             operator=self.program_compiler,
             args=space.Resampled(self._P_ARGS),
         )
-
-        self.epochs = space.Fidelity(space.Integer(1, self.max_epochs_per_config))
+        if self.epoch_fidelity:
+            self.epochs = space.Fidelity(space.Integer(1, self.max_epochs_per_config))
 
     @staticmethod
     def function_writer(operation, *args, store: int):
@@ -139,11 +141,13 @@ class Nosbench_space_int(space.Pipeline):
             "max_program_length": MAX_PROGRAM_LENGTH,
             "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
             "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
+            "epoch_fidelity": True,
         },
     ):
         self.max_program_length = nosbench_dict["max_program_length"]
         self.max_epochs_per_config = nosbench_dict["max_epochs_per_config"]
         self.available_variable_slots = nosbench_dict["available_variable_slots"]
+        self.epoch_fidelity = nosbench_dict["epoch_fidelity"]
 
         self._UNARY_FUN = space.Categorical(
             choices=(
@@ -231,7 +235,8 @@ class Nosbench_space_int(space.Pipeline):
             kwargs={"n_lines": space.Integer(1, self.max_program_length)},
         )
 
-        self.epochs = space.Fidelity(space.Integer(1, self.max_epochs_per_config))
+        if self.epoch_fidelity:
+            self.epochs = space.Fidelity(space.Integer(1, self.max_epochs_per_config))
 
     @staticmethod
     def function_writer(

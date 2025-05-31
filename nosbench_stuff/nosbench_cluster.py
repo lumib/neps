@@ -64,10 +64,12 @@ def nosbench_neps_demo(
         "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
         "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
         "benchmark": nosbench.ToyBenchmark(),
+        "epoch_fidelity": True,
         "pipeline_space": Nosbench_space(nosbench_dict={
             "max_program_length": MAX_PROGRAM_LENGTH,
             "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
             "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
+            "epoch_fidelity": True,
             }
         ),
     },
@@ -150,6 +152,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Use the integer version of the Nosbench space.",
     )
+    parser.add_argument(
+        "-ef", "--epoch_fidelity",
+        action="store_false",
+        help="Use epoch fidelity in the Nosbench space.",
+    )
     args = parser.parse_args()
 
     neps_dict = {
@@ -161,6 +168,7 @@ if __name__ == "__main__":
         "max_program_length": args.program_length,
         "max_epochs_per_config": args.epochs,
         "available_variable_slots": args.available_variable_slots,
+        "epoch_fidelity"args.epoch_fidelity,
         "benchmark": nosbench.ToyBenchmark() if args.benchmark == "ToyBenchmark" else nosbench.NosBench() if args.benchmark == "NosBench" else nosbench.ToyBenchmark(),
     }
     pipeline_space = Nosbench_space(nosbench_dict=nosbench_dict)
