@@ -11,9 +11,9 @@ import torch
 import pprint
 import argparse
 
-MAX_PROGRAM_LENGTH = 16
-MAX_EPOCHS_PER_CONFIG = 20
-AVAILABLE_VARIABLE_SLOTS = 11
+MAX_PROGRAM_LENGTH = 20         # Maximum length of the program in the Nosbench space.
+MAX_EPOCHS_PER_CONFIG = 20      # Maximum epochs per configuration in the Nosbench space.
+AVAILABLE_VARIABLE_SLOTS = 11   # Number of available variable slots in the Nosbench space.
 
 
 def evaluate_pipeline(program: Program, epochs: int = MAX_EPOCHS_PER_CONFIG, benchmark= nosbench.ToyBenchmark(), **_) -> float:
@@ -58,7 +58,7 @@ def nosbench_neps_demo(
     optimizer,
     optimizer_name,
     max_evaluations_total=100,
-    rep_suffix="",
+    dir_suffix="",
     summary_print_config=False,
     nosbench_dict={
         "max_program_length": MAX_PROGRAM_LENGTH,
@@ -76,7 +76,7 @@ def nosbench_neps_demo(
     },
 ):
     optimizer.__name__ = optimizer_name  # Needed by NEPS later.
-    root_directory = f"results/nosbench_{optimizer.__name__}{'_'+rep_suffix if rep_suffix else ''}"
+    root_directory = f"results/nosbench_{optimizer.__name__}{'_'+dir_suffix if dir_suffix else ''}"
     pprint.pprint(nosbench_dict)
 
     neps.run(
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         help="Total number of evaluations to run.",
     )
     parser.add_argument(
-        "-rs", "--rep_suffix",
+        "-ds", "--dir_suffix",
         type=str,
         default="",
         help="Suffix to append to the results directory.",
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     neps_dict = {
         "max_evaluations_total": args.max_evaluations_total,
         "optimizer": args.optimizer,
-        "directory_suffix": args.rep_suffix,
+        "directory_suffix": args.dir_suffix,
         "summary_print_config": args.summary_print_config,
     }
     nosbench_dict = {
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     nosbench_neps_demo(
         *optimizers_dict[neps_dict["optimizer"]],
         max_evaluations_total=neps_dict["max_evaluations_total"],
-        rep_suffix=neps_dict["directory_suffix"],
+        dir_suffix=neps_dict["directory_suffix"],
         summary_print_config=neps_dict["summary_print_config"],
         nosbench_dict=nosbench_dict,
     )
