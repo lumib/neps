@@ -76,7 +76,7 @@ def nosbench_neps_demo(
 
     
 
-    root_directory = f"results/nosbench_{optimizer.__name__}{"_"+rep_suffix if rep_suffix else ""}"
+    root_directory = f"results/nosbench_{optimizer.__name__}{'_'+rep_suffix if rep_suffix else ''}"
 
     print(f"Running for root directory: {root_directory}")
     print(f"Using optimizer: {optimizer_name}")
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         help="Optimizer to use for the NEPS run. Available options: " + ", ".join(optimizers_dict.keys()),
     )
     parser.add_argument(
-        "--max_evaluations_total","-ev"
+        "--max_evaluations_total","-ev",
         type=int,
         default=100,
         help="Total number of evaluations to run.",
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         help="Suffix to append to the results directory.",
     )
     parser.add_argument(
-        "--program_length", "-pl"
+        "--program_length", "-pl",
         type=int,
         default=MAX_PROGRAM_LENGTH,
         help="Maximum program length for the Nosbench space.",
