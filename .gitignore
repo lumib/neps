@@ -1,3 +1,7 @@
+# NosBench caches
+cache/
+.lock/
+
 # False Python
 __pycache__
 dist
