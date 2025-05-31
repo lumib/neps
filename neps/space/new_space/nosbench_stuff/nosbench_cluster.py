@@ -59,6 +59,7 @@ def nosbench_neps_demo(
     optimizer,
     optimizer_name,
     max_evaluations_total=100,
+    rep_suffix="",
     nosbench_dict={
         "max_program_length": MAX_PROGRAM_LENGTH,
         "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
@@ -77,7 +78,7 @@ def nosbench_neps_demo(
         max_epochs_per_config=MAX_EPOCHS_PER_CONFIG,
         available_variable_slots=AVAILABLE_VARIABLE_SLOTS,
     )
-    root_directory = f"results/nosbench_{optimizer.__name__}"
+    root_directory = f"results/nosbench_{optimizer.__name__}{rep_suffix}"
 
     print(f"Running for root directory: {root_directory}")
     print(f"Using optimizer: {optimizer_name}")
@@ -102,15 +103,17 @@ def nosbench_neps_demo(
 
 if __name__ == "__main__":
     neps_dict = {
-        "max_evaluations_total": 10,
-        "optimizer": "RS",
+        "max_evaluations_total": 1000,
+        "optimizer": "PB+ASHB",
+        "directory_suffix": "_PB_CPU_10_1000"
     }
     nosbench_dict = {
         "max_program_length": MAX_PROGRAM_LENGTH,
-        "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
+        "max_epochs_per_config": 2,
         "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
     }
     nosbench_neps_demo(
         *optimizers_dict[neps_dict["optimizer"]],
         max_evaluations_total=neps_dict["max_evaluations_total"],
+        rep_suffix=neps_dict["directory_suffix"],
     )
