@@ -139,14 +139,14 @@ if __name__ == "__main__":
         help="Number of available variable slots for the Nosbench space.",
     )
     parser.add_argument(
-        "--benchmark", "-b",
+        "-b", "--benchmark",
         type=str,
         default="ToyBenchmark",
         choices=["ToyBenchmark", "NosBench"],
         help="Benchmark to use for the Nosbench space.",
     )
     parser.add_argument(
-        "--pipeline_space_int","-psi",
+        "-psi", "--pipeline_space_int",
         action="store_true",
         help="Use the integer version of the Nosbench space.",
     )
