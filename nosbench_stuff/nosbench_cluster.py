@@ -102,32 +102,32 @@ def nosbench_neps_demo(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run NEPS with Nosbench on a cluster.")
     parser.add_argument(
-        "--optimizer","-o",
+        "-o", "--optimizer",
         type=str,
         choices=list(optimizers_dict.keys()),
         default="PB+ASHB",
         help="Optimizer to use for the NEPS run.",
     )
     parser.add_argument(
-        "--max_evaluations_total","-ev",
+        "-ev", "--max_evaluations_total",
         type=int,
         default=100,
         help="Total number of evaluations to run.",
     )
     parser.add_argument(
-        "--rep_suffix", "-rs",
+        "-rs", "--rep_suffix",
         type=str,
         default="",
         help="Suffix to append to the results directory.",
     )
     parser.add_argument(
-        "--program_length", "-pl",
+        "-pl", "--program_length",
         type=int,
         default=MAX_PROGRAM_LENGTH,
         help="Maximum program length for the Nosbench space.",
     )
     parser.add_argument(
-        "--epochs", "-ep",
+        "-ep", "--epochs",
         type=int,
         default=MAX_EPOCHS_PER_CONFIG,
         help="Maximum epochs per configuration for the Nosbench space.",
