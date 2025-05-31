@@ -106,7 +106,7 @@ if __name__ == "__main__":
         type=str,
         choices=list(optimizers_dict.keys()),
         default="PB+ASHB",
-        help="Optimizer to use for the NEPS run. Available options: " + ", ".join(optimizers_dict.keys()),
+        help="Optimizer to use for the NEPS run.",
     )
     parser.add_argument(
         "--max_evaluations_total","-ev",
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         type=str,
         default="ToyBenchmark",
         choices=["ToyBenchmark", "NosBench"],
-        help="Benchmark to use for the Nosbench space. Available options: ToyBenchmark, NosBench.",
+        help="Benchmark to use for the Nosbench space.",
     )
     parser.add_argument(
         "--pipeline_space_int","-psi",
