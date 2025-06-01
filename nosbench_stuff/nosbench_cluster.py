@@ -91,7 +91,7 @@ def nosbench_neps_demo(
         root_directory=root_directory,
         post_run_summary=True,
         max_evaluations_total=max_evaluations_total,
-        overwrite_working_directory=True,
+        overwrite_working_directory=False,
     )
 
     neps.status(root_directory, print_summary=True, print_config=summary_print_config)

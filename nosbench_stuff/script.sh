@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --time 0-24:00
+#SBATCH --time 1-00:00
 #SBATCH --job-name nosbench_array
-#SBATCH --partition mlhiwidlc_gpu-rtx2080 
-##SBATCH --partition bosch_cpu-cascadelake 
+##SBATCH --partition mlhiwidlc_gpu-rtx2080 
+#SBATCH --partition bosch_cpu-cascadelake 
 #SBATCH --mem 4000 # memory pool for all cores (4GB)
 #SBATCH -c 1 # number of cores
-#SBATCH -a 1-1 # array size
-#SBATCH --gres=gpu:1  # reserves one GPU
+#SBATCH -a 1-4 # array size
+##SBATCH --gres=gpu:1  # reserves one GPU
 #SBATCH -o log/%x.%N.%A.%a.out # STDOUT  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
 #SBATCH -e log/%x.%N.%A.%a.err # STDERR  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
 
@@ -18,7 +18,7 @@ source .venv/bin/activate;
 # Variables
 OPTIMIZER="PB+ASHB";
 EVALUATIONS=100000;
-DIR_SUFFIX="1_GPU_100k";
+DIR_SUFFIX="4_CPU_100k_wo_Overwrite";
 BENCHMARK="NosBench";
 # BENCHMARK="ToyBenchmark";
 
