@@ -10,6 +10,7 @@ import neps.space.new_space.bracket_optimizer as new_bracket_optimizer
 import torch
 import pprint
 import argparse
+import logging
 
 MAX_PROGRAM_LENGTH = 20         # Maximum length of the program in the Nosbench space.
 MAX_EPOCHS_PER_CONFIG = 20      # Maximum epochs per configuration in the Nosbench space.
@@ -79,6 +80,7 @@ def nosbench_neps_demo(
     root_directory = f"results/nosbench_{optimizer.__name__}{'_'+dir_suffix if dir_suffix else ''}"
     pprint.pprint(nosbench_dict)
 
+    logging.basicConfig(level=logging.INFO)
     neps.run(
         evaluate_pipeline=space.adjust_evaluation_pipeline_for_new_space(
             partial(evaluate_pipeline, benchmark=nosbench_dict["benchmark"], epochs=nosbench_dict["max_epochs_per_config"]),
