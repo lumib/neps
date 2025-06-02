@@ -10,9 +10,7 @@
 #SBATCH -o log/%x.%A/out/%N.%a.out # STDOUT  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
 #SBATCH -e log/%x.%A/err/%N.%a.err # STDERR  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
 
-# echo "Workingdir: $PWD";
 mkdir -p log;
-
 source .venv/bin/activate;
 
 # Variables

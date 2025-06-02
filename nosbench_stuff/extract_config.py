@@ -9,6 +9,10 @@ import yaml
 
 exp = "nosbench_new__priorband+async_hb_4_GPU_100k_wo_Overwrite"
 config_id = "27952_2"
+MAX_PROGRAM_LENGTH = 20
+MAX_EPOCHS_PER_CONFIG = 20
+AVAILABLE_VARIABLE_SLOTS = 11
+nosbench_space = Nosbench_space(max_program_length=16, max_epochs_per_config=20, available_variable_slots=11)
 
 with open("./results/"+exp+"/configs/config_"+config_id+"/config.yaml") as stream:
     config=yaml.safe_load(stream)
@@ -27,7 +31,7 @@ for key in list(config.keys()):
         new_key = key[len('ENVIRONMENT__'):]
         environment_values[new_key] = config.pop(key)
 
-resolved_pipeline, resolution_context = space.resolve(Nosbench_space(max_program_length=16),space.OnlyPredefinedValuesSampler(config),environment_values=environment_values)
+resolved_pipeline, resolution_context = space.resolve(nosbench_space, space.OnlyPredefinedValuesSampler(config), environment_values=environment_values)
 program=space.convert_operation_to_callable(resolved_pipeline.program)
 pprint.pprint(program)
 prune_program(program)
