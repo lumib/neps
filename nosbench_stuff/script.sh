@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --time 1-00:00
-#SBATCH --job-name nosbench_array
-##SBATCH --partition mlhiwidlc_gpu-rtx2080 
-#SBATCH --partition bosch_cpu-cascadelake 
+#SBATCH --time 0-00:02
+#SBATCH --job-name nosbench
+#SBATCH --partition mlhiwidlc_gpu-rtx2080 
+##SBATCH --partition bosch_cpu-cascadelake 
 #SBATCH --mem 4000 # memory pool for all cores (4GB)
 #SBATCH -c 1 # number of cores
-#SBATCH -a 1-4 # array size
-##SBATCH --gres=gpu:1  # reserves one GPU
-#SBATCH -o log/%x.%N.%A.%a.out # STDOUT  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
-#SBATCH -e log/%x.%N.%A.%a.err # STDERR  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
+#SBATCH -a 1-2 # array size
+#SBATCH --gres=gpu:1  # reserves one GPU
+#SBATCH -o log/%x.%A/out/%N.%a.out # STDOUT  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
+#SBATCH -e log/%x.%A/err/%N.%a.err # STDERR  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
 
 # echo "Workingdir: $PWD";
 mkdir -p log;
@@ -17,8 +17,8 @@ source .venv/bin/activate;
 
 # Variables
 OPTIMIZER="PB+ASHB";
-EVALUATIONS=100000;
-DIR_SUFFIX="4_CPU_100k_wo_Overwrite";
+EVALUATIONS=200;
+DIR_NAME="cont_test_"$OPTIMIZER"_500"; #$EVALUATIONS;
 BENCHMARK="NosBench";
 # BENCHMARK="ToyBenchmark";
 
@@ -30,7 +30,7 @@ echo "Running nosbench_stuff/nosbench_cluster.py with the following parameters:"
 echo "Optimizer: $OPTIMIZER"
 echo "Evaluations: $EVALUATIONS"
 echo "Benchmark: $BENCHMARK"
-echo "Suffix: $DIR_SUFFIX"
+echo "Name: $DIR_NAME"
 
 # Only include -ef argument if FIDELITY is False
 if [ "$FIDELITY" = False ]; then
@@ -38,14 +38,14 @@ if [ "$FIDELITY" = False ]; then
         -o $OPTIMIZER \
         -ev $EVALUATIONS \
         -b $BENCHMARK \
-        -ds $DIR_SUFFIX \
+        -d $DIR_NAME \
         -ef
 else
     python nosbench_stuff/nosbench_cluster.py \
         -o $OPTIMIZER \
         -ev $EVALUATIONS \
         -b $BENCHMARK \
-        -ds $DIR_SUFFIX
+        -d $DIR_NAME
 fi
 
 # Convert elapsed time to hours, minutes, seconds and echo

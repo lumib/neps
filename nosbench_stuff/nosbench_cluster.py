@@ -59,7 +59,7 @@ def nosbench_neps_demo(
     optimizer,
     optimizer_name,
     max_evaluations_total=100,
-    dir_suffix="",
+    dir_name="",
     summary_print_config=False,
     nosbench_dict={
         "max_program_length": MAX_PROGRAM_LENGTH,
@@ -77,7 +77,7 @@ def nosbench_neps_demo(
     },
 ):
     optimizer.__name__ = optimizer_name  # Needed by NEPS later.
-    root_directory = f"results/nosbench_{optimizer.__name__}{'_'+dir_suffix if dir_suffix else ''}"
+    root_directory = f"results/{dir_name if dir_name else 'nosbench'}"
     pprint.pprint(nosbench_dict)
 
     logging.basicConfig(level=logging.INFO)
@@ -113,10 +113,10 @@ if __name__ == "__main__":
         help="Total number of evaluations to run.",
     )
     parser.add_argument(
-        "-ds", "--dir_suffix",
+        "-d", "--dir_name",
         type=str,
         default="",
-        help="Suffix to append to the results directory.",
+        help="String to name the results directory.",
     )
     parser.add_argument(
         "-pl", "--program_length",
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     neps_dict = {
         "max_evaluations_total": args.max_evaluations_total,
         "optimizer": args.optimizer,
-        "directory_suffix": args.dir_suffix,
+        "directory_name": args.dir_name,
         "summary_print_config": args.summary_print_config,
     }
     nosbench_dict = {
@@ -180,7 +180,7 @@ if __name__ == "__main__":
     nosbench_neps_demo(
         *optimizers_dict[neps_dict["optimizer"]],
         max_evaluations_total=neps_dict["max_evaluations_total"],
-        dir_suffix=neps_dict["directory_suffix"],
+        dir_name=neps_dict["directory_name"],
         summary_print_config=neps_dict["summary_print_config"],
         nosbench_dict=nosbench_dict,
     )
