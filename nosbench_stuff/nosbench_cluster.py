@@ -67,12 +67,11 @@ def nosbench_neps_demo(
         "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
         "benchmark": nosbench.ToyBenchmark(),
         "epoch_fidelity": True,
-        "pipeline_space": Nosbench_space(nosbench_dict={
-            "max_program_length": MAX_PROGRAM_LENGTH,
-            "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
-            "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
-            "epoch_fidelity": True,
-            }
+        "pipeline_space": Nosbench_space(
+            max_program_length=MAX_PROGRAM_LENGTH,
+            max_epochs_per_config=MAX_EPOCHS_PER_CONFIG,
+            available_variable_slots=AVAILABLE_VARIABLE_SLOTS,
+            epoch_fidelity=True,
         ),
     },
 ):
@@ -173,8 +172,8 @@ if __name__ == "__main__":
         "epoch_fidelity": args.epoch_fidelity,
         "benchmark": nosbench.ToyBenchmark() if args.benchmark == "ToyBenchmark" else nosbench.NOSBench() if args.benchmark == "NosBench" else nosbench.ToyBenchmark(),
     }
-    pipeline_space = Nosbench_space(nosbench_dict=nosbench_dict)
-    pipeline_space_int = Nosbench_space_int(nosbench_dict=nosbench_dict)
+    pipeline_space = Nosbench_space(**nosbench_dict)
+    pipeline_space_int = Nosbench_space_int(**nosbench_dict)
     nosbench_dict["pipeline_space"] = pipeline_space if not args.pipeline_space_int else pipeline_space_int
 
     nosbench_neps_demo(

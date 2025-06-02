@@ -1,0 +1,36 @@
+from nosbench.utils import prune_program
+from nosbench.program import Program
+from neps.space.new_space.nosbench_spaces import Nosbench_space, Nosbench_space_int
+import neps.space.new_space.space as space
+import nosbench
+import pprint
+
+import yaml
+
+exp = "nosbench_new__priorband+async_hb_4_GPU_100k_wo_Overwrite"
+config_id = "27952_2"
+
+with open("./results/"+exp+"/configs/config_"+config_id+"/config.yaml") as stream:
+    config=yaml.safe_load(stream)
+    # pprint.pprint(config)
+
+# For each key, remove the 'SAMPLING__' prefix, except for 'epochs'
+for key in list(config.keys()):
+    if key.startswith('SAMPLING__'):
+        new_key = key[len('SAMPLING__'):]
+        config[new_key] = config.pop(key)
+
+# Collect the ENVIRONMENT__ values in a separate dictionary without the prefix
+environment_values = {}
+for key in list(config.keys()):
+    if key.startswith('ENVIRONMENT__'):
+        new_key = key[len('ENVIRONMENT__'):]
+        environment_values[new_key] = config.pop(key)
+
+resolved_pipeline, resolution_context = space.resolve(Nosbench_space(max_program_length=16),space.OnlyPredefinedValuesSampler(config),environment_values=environment_values)
+program=space.convert_operation_to_callable(resolved_pipeline.program)
+pprint.pprint(program)
+prune_program(program)
+print()
+pprint.pprint(program)
+# print(nosbench.NOSBench().query(program, epoch=environment_values['epochs']))

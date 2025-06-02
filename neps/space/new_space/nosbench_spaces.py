@@ -12,17 +12,16 @@ AVAILABLE_VARIABLE_SLOTS = 11  # As per the Nosbench paper
 class Nosbench_space(space.Pipeline):
     def __init__(
         self,
-        nosbench_dict={
-            "max_program_length": MAX_PROGRAM_LENGTH,
-            "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
-            "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
-            "epoch_fidelity": True,
-        },
+        max_program_length=MAX_PROGRAM_LENGTH,
+        max_epochs_per_config=MAX_EPOCHS_PER_CONFIG,
+        available_variable_slots=AVAILABLE_VARIABLE_SLOTS,
+        epoch_fidelity=True,
+        **_,
     ):
-        self.max_program_length = nosbench_dict["max_program_length"]
-        self.max_epochs_per_config = nosbench_dict["max_epochs_per_config"]
-        self.available_variable_slots = nosbench_dict["available_variable_slots"]
-        self.epoch_fidelity = nosbench_dict["epoch_fidelity"]
+        self.max_program_length = max_program_length
+        self.max_epochs_per_config = max_epochs_per_config
+        self.available_variable_slots = available_variable_slots
+        self.epoch_fidelity = epoch_fidelity
 
         self._UNARY_FUN = space.Categorical(
             choices=(
@@ -137,17 +136,16 @@ class Nosbench_space(space.Pipeline):
 class Nosbench_space_int(space.Pipeline):
     def __init__(
         self,
-        nosbench_dict={
-            "max_program_length": MAX_PROGRAM_LENGTH,
-            "max_epochs_per_config": MAX_EPOCHS_PER_CONFIG,
-            "available_variable_slots": AVAILABLE_VARIABLE_SLOTS,
-            "epoch_fidelity": True,
-        },
+        max_program_length=MAX_PROGRAM_LENGTH,
+        max_epochs_per_config=MAX_EPOCHS_PER_CONFIG,
+        available_variable_slots=AVAILABLE_VARIABLE_SLOTS,
+        epoch_fidelity=True,
+        **_,
     ):
-        self.max_program_length = nosbench_dict["max_program_length"]
-        self.max_epochs_per_config = nosbench_dict["max_epochs_per_config"]
-        self.available_variable_slots = nosbench_dict["available_variable_slots"]
-        self.epoch_fidelity = nosbench_dict["epoch_fidelity"]
+        self.max_program_length = max_program_length
+        self.max_epochs_per_config = max_epochs_per_config
+        self.available_variable_slots = available_variable_slots
+        self.epoch_fidelity = epoch_fidelity
 
         self._UNARY_FUN = space.Categorical(
             choices=(
