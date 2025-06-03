@@ -2,10 +2,10 @@
 #SBATCH --time 1-00:00
 #SBATCH --job-name nosbench
 ##SBATCH --partition mlhiwidlc_gpu-rtx2080 
-#SBATCH --partition bosch_cpu-cascadelake 
+#SBATCH --partition bosch_cpu-cascadelake
 #SBATCH --mem 4000 # memory pool for all cores (4GB)
 #SBATCH -c 1 # number of cores
-#SBATCH -a 1-4 # array size
+#SBATCH -a 1-1 # array size
 ##SBATCH --gres=gpu:1  # reserves one GPU
 #SBATCH -o log/%x.%A/out/%N.%a.out # STDOUT  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
 #SBATCH -e log/%x.%A/err/%N.%a.err # STDERR  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
@@ -15,8 +15,9 @@ source .venv/bin/activate;
 
 # Variables
 OPTIMIZER="PB+ASHB";
-EVALUATIONS=25000;
-DIR_NAME="nos_25k_4CPU"; #"cont_test_"$OPTIMIZER"_500"; #$EVALUATIONS;
+# EVALUATIONS=25000;
+COST=200;
+DIR_NAME="cost_test";
 BENCHMARK="NosBench";
 # BENCHMARK="ToyBenchmark";
 
@@ -26,25 +27,37 @@ STARTTIME=$(date +%s)
 
 echo "Running nosbench_stuff/nosbench_cluster.py with the following parameters:"
 echo "Optimizer: $OPTIMIZER"
-echo "Evaluations: $EVALUATIONS"
+if [ -z ${EVALUATIONS+x} ]; then
+    echo "Cost: $COST"
+else
+    echo "Evaluations: $EVALUATIONS"
+fi
 echo "Benchmark: $BENCHMARK"
 echo "Name: $DIR_NAME"
 
-# Only include -ef argument if FIDELITY is False
-if [ "$FIDELITY" = False ]; then
-    python nosbench_stuff/nosbench_cluster.py \
-        -o $OPTIMIZER \
-        -ev $EVALUATIONS \
-        -b $BENCHMARK \
-        -d $DIR_NAME \
-        -ef
+# Initialize an array for arguments
+cmd_args=(
+    -o "$OPTIMIZER"
+    -b "$BENCHMARK"
+    -d "$DIR_NAME"
+)
+
+# Add arguments based on EVALUATIONS
+if [ -z {$EVALUATIONS+x} ]; then
+    cmd_args+=(-ev "$EVALUATIONS") # Add -ev if EVALUATIONS is empty/unset
 else
-    python nosbench_stuff/nosbench_cluster.py \
-        -o $OPTIMIZER \
-        -ev $EVALUATIONS \
-        -b $BENCHMARK \
-        -d $DIR_NAME
+    cmd_args+=(-mct "$COST")       # Add -mct if EVALUATIONS is not empty
 fi
+
+# Add flag based on FIDELITY
+if [ "$FIDELITY" = False ]; then
+    cmd_args+=(-ef)                # Add -ef if FIDELITY is False
+fi
+
+# Execute the python script with the constructed arguments
+python nosbench_stuff/nosbench_cluster.py "${cmd_args[@]}"
+
+
 
 # Convert elapsed time to hours, minutes, seconds and echo
 ELAPSED=$(($(date +%s) - STARTTIME))

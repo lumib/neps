@@ -2,6 +2,7 @@ from nosbench.utils import prune_program
 from nosbench.program import Program
 from neps.space.new_space.nosbench_spaces import Nosbench_space, Nosbench_space_int
 import neps.space.new_space.space as space
+from pathlib import Path
 import math
 import nosbench
 from functools import partial
@@ -16,15 +17,33 @@ MAX_PROGRAM_LENGTH = 20         # Maximum length of the program in the Nosbench 
 MAX_EPOCHS_PER_CONFIG = 20      # Maximum epochs per configuration in the Nosbench space.
 AVAILABLE_VARIABLE_SLOTS = 11   # Number of available variable slots in the Nosbench space.
 
-
-def evaluate_pipeline(program: Program, epochs: int = MAX_EPOCHS_PER_CONFIG, benchmark= nosbench.ToyBenchmark(), **_) -> float:
+def evaluate_pipeline(program: Program,
+                      pipeline_directory:Path,
+                      previous_pipeline_directory:Path,
+                      epochs: int = MAX_EPOCHS_PER_CONFIG,
+                      benchmark = nosbench.ToyBenchmark(),
+                      **_) -> float|dict[str, int|float]:
     prune_program(program)
     objective_to_minimize = benchmark.query(program, epochs)
     assert isinstance(objective_to_minimize, float)
     objective_to_minimize = (
         torch.inf if math.isnan(objective_to_minimize) else objective_to_minimize
     )
-    return objective_to_minimize
+    if previous_pipeline_directory is not None:
+        # Read in state of the model after the previous fidelity rung
+        with open(previous_pipeline_directory / "fidelity.txt") as f:
+            prev_epoch = int(f.read())
+    else:
+        prev_epoch = 0
+    added_cost = epochs - prev_epoch
+
+    with open(pipeline_directory / "fidelity.txt", "w") as f:
+        f.write(str(epochs))
+
+    return {
+        "objective_to_minimize": objective_to_minimize,
+        "cost": added_cost,
+    }
 
 
 optimizers_dict = {
@@ -58,7 +77,8 @@ optimizers_dict = {
 def nosbench_neps_demo(
     optimizer,
     optimizer_name,
-    max_evaluations_total=100,
+    max_evaluations_total = None,
+    max_cost_total = None,
     dir_name="",
     summary_print_config=False,
     nosbench_dict={
@@ -90,6 +110,7 @@ def nosbench_neps_demo(
         root_directory=root_directory,
         post_run_summary=True,
         max_evaluations_total=max_evaluations_total,
+        max_cost_total=max_cost_total,
         overwrite_working_directory=False,
     )
 
@@ -108,7 +129,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-ev", "--max_evaluations_total",
         type=int,
-        default=100,
+        default=None,
         help="Total number of evaluations to run.",
     )
     parser.add_argument(
@@ -157,10 +178,17 @@ if __name__ == "__main__":
         action="store_true",
         help="Print the best configuration after the run.",
     )
+    parser.add_argument(
+        "-mct", "--max_cost_total",
+        type=float,
+        default=None,
+        help="Total cost to run, if applicable.",
+    )
     args = parser.parse_args()
 
     neps_dict = {
         "max_evaluations_total": args.max_evaluations_total,
+        "max_cost_total": args.max_cost_total,
         "optimizer": args.optimizer,
         "directory_name": args.dir_name,
         "summary_print_config": args.summary_print_config,
@@ -179,6 +207,7 @@ if __name__ == "__main__":
     nosbench_neps_demo(
         *optimizers_dict[neps_dict["optimizer"]],
         max_evaluations_total=neps_dict["max_evaluations_total"],
+        max_cost_total=neps_dict["max_cost_total"],
         dir_name=neps_dict["directory_name"],
         summary_print_config=neps_dict["summary_print_config"],
         nosbench_dict=nosbench_dict,
