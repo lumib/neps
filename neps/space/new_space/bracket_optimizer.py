@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import partial
-from typing import TYPE_CHECKING, Literal, Any
+from typing import TYPE_CHECKING, Literal, Any, Tuple
 
 import pandas as pd
 
 from neps.optimizers.optimizer import SampledConfig
 from neps.space.new_space.priorband import PriorBandSampler
+from neps.space.new_space.space import OnlyPredefinedValuesSampler
 from neps.optimizers.utils.brackets import PromoteAction, SampleAction
 import neps.space.new_space.space as new_space
 import neps.optimizers.bracket_optimizer as standard_bracket_optimizer
@@ -48,6 +49,9 @@ class _BracketOptimizer:
     """The sampler used to generate new trials."""
     sampler: PriorBandSampler
 
+    """A list of samplings to make before starting the optimization."""
+    samplings_to_make: list[Tuple[Mapping[str, Any],Mapping[str, Any]]] = field(default_factory=list)
+
     def __call__(  # noqa: C901, PLR0912
         self,
         trials: Mapping[str, Trial],
@@ -55,6 +59,26 @@ class _BracketOptimizer:
         n: int | None = None,
     ) -> SampledConfig | list[SampledConfig]:
         assert n is None, "TODO"
+
+        # If we have samplings to make, we will do that first
+        if len(self.samplings_to_make)>0 and len(trials) < len(self.samplings_to_make):
+            _fidelity_attrs = self.space.fidelity_attrs
+            assert len(_fidelity_attrs) == 1, "TODO: [lum]"
+            rung = min(self.rung_to_fid)
+            for fidelity_name, _ in _fidelity_attrs.items():
+                rungs = list(self.rung_to_fid.keys())
+                rungs.sort()
+                for rung in rungs:
+                    if self.rung_to_fid[rung] >= self.samplings_to_make[len(trials)][1][fidelity_name]:
+                        break
+            _resolved_pipeline, resolution_context = new_space.resolve(
+                pipeline=self.space,
+                domain_sampler=new_space.OnlyPredefinedValuesSampler(
+                    predefined_samplings=self.samplings_to_make[len(trials)][0]
+                    ),
+                environment_values=self.samplings_to_make[len(trials)][1],)
+            print(_resolved_pipeline)
+            return SampledConfig(id=f"{len(trials)+1}_{rung}", config=new_space.NepsCompatConverter.to_neps_config(resolution_context,))
 
         # If we have no trials, we either go with the prior or just a sampled config
         if len(trials) == 0:
@@ -83,6 +107,9 @@ class _BracketOptimizer:
         # up in a bracket
         if self.sample_prior_first == "highest_fidelity":
             table = table.iloc[1:]
+
+        if len(self.samplings_to_make) > 0:
+            table = table.iloc[len(self.samplings_to_make):]
 
         # Get and execute the next action from our brackets that are not pending or done
         assert isinstance(table, pd.DataFrame)
@@ -186,6 +213,7 @@ def priorband(
     *,
     eta: int = 3,
     sample_prior_first: bool | Literal["highest_fidelity"] = False,
+    samplings_to_make: list[Mapping[str, Any]] = [],
     base: Literal["successive_halving", "hyperband", "asha", "async_hb"] = "hyperband",
 ) -> _BracketOptimizer:
     return _bracket_optimizer(
@@ -194,6 +222,7 @@ def priorband(
         eta=eta,
         sampler="priorband",
         sample_prior_first=sample_prior_first,
+        samplings_to_make=samplings_to_make,
         early_stopping_rate=0 if base in ("successive_halving", "asha") else None,
     )
 
@@ -204,6 +233,7 @@ def _bracket_optimizer(  # noqa: C901, PLR0912, PLR0915
     bracket_type: Literal["successive_halving", "hyperband", "asha", "async_hb"],
     eta: int,
     sampler: Literal["priorband"],
+    samplings_to_make: list[Tuple[Mapping[str, Any],Mapping[str, Any]]] = [],
     sample_prior_first: bool | Literal["highest_fidelity"],
     early_stopping_rate: int | None,
 ) -> _BracketOptimizer:
@@ -292,6 +322,7 @@ def _bracket_optimizer(  # noqa: C901, PLR0912, PLR0915
         eta=eta,
         rung_to_fid=rung_to_fidelity,
         sampler=_sampler,
+        samplings_to_make=samplings_to_make,
         sample_prior_first=sample_prior_first,
         create_brackets=create_brackets,
     )
