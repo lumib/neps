@@ -52,5 +52,6 @@ path
 
 # NosBench
 cache/
+test_cache/
 .lock/
 !nosbench_stuff/script.sh

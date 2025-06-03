@@ -7,14 +7,15 @@ import pprint
 
 import yaml
 
-exp = "nosbench_new__priorband+async_hb_4_GPU_100k_wo_Overwrite"
-config_id = "27952_2"
+# experiment_name = "nosbench_new__priorband+async_hb_4_GPU_100k_wo_Overwrite"
+experiment_name = "nos_25k_4CPU"
+config_id = "3150_2"
 MAX_PROGRAM_LENGTH = 20
 MAX_EPOCHS_PER_CONFIG = 20
 AVAILABLE_VARIABLE_SLOTS = 11
-nosbench_space = Nosbench_space(max_program_length=16, max_epochs_per_config=20, available_variable_slots=11)
+nosbench_space = Nosbench_space(max_program_length=20, max_epochs_per_config=20, available_variable_slots=11)
 
-with open("./results/"+exp+"/configs/config_"+config_id+"/config.yaml") as stream:
+with open("./results/"+experiment_name+"/configs/config_"+config_id+"/config.yaml") as stream:
     config=yaml.safe_load(stream)
     # pprint.pprint(config)
 
@@ -35,6 +36,7 @@ resolved_pipeline, resolution_context = space.resolve(nosbench_space, space.Only
 program=space.convert_operation_to_callable(resolved_pipeline.program)
 pprint.pprint(program)
 prune_program(program)
+print(nosbench.NOSBench(path="test_cache").query(program, epoch=environment_values['epochs']))
 print()
 pprint.pprint(program)
-# print(nosbench.NOSBench().query(program, epoch=environment_values['epochs']))
+print(nosbench.NOSBench(path="test_cache").query(program, epoch=environment_values['epochs']))
