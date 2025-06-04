@@ -1,5 +1,6 @@
 from nosbench.utils import prune_program
 from nosbench.program import Program
+from nosbench.optimizers import AdamW
 from neps.space.new_space.nosbench_spaces import Nosbench_space, Nosbench_space_int
 import neps.space.new_space.space as space
 import nosbench
@@ -8,8 +9,8 @@ import pprint
 import yaml
 
 # experiment_name = "nosbench_new__priorband+async_hb_4_GPU_100k_wo_Overwrite"
-experiment_name = "nos_25k_4CPU"
-config_id = "3150_2"
+experiment_name = "test_warmstart"
+config_id = "1_2"
 MAX_PROGRAM_LENGTH = 20
 MAX_EPOCHS_PER_CONFIG = 20
 AVAILABLE_VARIABLE_SLOTS = 11
@@ -35,8 +36,9 @@ for key in list(config.keys()):
 resolved_pipeline, resolution_context = space.resolve(nosbench_space, space.OnlyPredefinedValuesSampler(config), environment_values=environment_values)
 program=space.convert_operation_to_callable(resolved_pipeline.program)
 pprint.pprint(program)
+print(program==AdamW)
 prune_program(program)
-print(nosbench.NOSBench(path="test_cache").query(program, epoch=environment_values['epochs']))
-print()
-pprint.pprint(program)
-print(nosbench.NOSBench(path="test_cache").query(program, epoch=environment_values['epochs']))
+# print(nosbench.NOSBench(path="test_cache").query(program, epoch=environment_values['epochs']))
+# print()
+# pprint.pprint(program)
+# print(nosbench.NOSBench(path="test_cache").query(program, epoch=environment_values['epochs']))
