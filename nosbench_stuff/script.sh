@@ -16,8 +16,9 @@ source .venv/bin/activate;
 # Variables
 OPTIMIZER="PB+ASHB";
 # EVALUATIONS=25000;
-COST=200;
-DIR_NAME="cost_test";
+COST=25;
+DIR_NAME="test_warmstart";
+WARMSTART="AdamW";
 BENCHMARK="NosBench";
 # BENCHMARK="ToyBenchmark";
 
@@ -27,10 +28,15 @@ STARTTIME=$(date +%s)
 
 echo "Running nosbench_stuff/nosbench_cluster.py with the following parameters:"
 echo "Optimizer: $OPTIMIZER"
-if [ -z ${EVALUATIONS+x} ]; then
-    echo "Cost: $COST"
-else
+if [[ -v EVALUATIONS ]]; then
     echo "Evaluations: $EVALUATIONS"
+else
+    echo "Cost: $COST"
+fi
+if [[ -v WARMSTART ]]; then
+    echo "Warmstart: $WARMSTART"
+else
+    echo "No warmstart"
 fi
 echo "Benchmark: $BENCHMARK"
 echo "Name: $DIR_NAME"
@@ -43,17 +49,22 @@ cmd_args=(
 )
 
 # Add arguments based on EVALUATIONS
-if [ -z {$EVALUATIONS+x} ]; then
+if [[ -v EVALUATIONS ]]; then
     cmd_args+=(-ev "$EVALUATIONS") # Add -ev if EVALUATIONS is empty/unset
 else
     cmd_args+=(-mct "$COST")       # Add -mct if EVALUATIONS is not empty
+fi
+
+# Add warmstart argument if WARMSTART is set
+if [[ WARMSTART ]]; then
+    cmd_args+=(-ws "$WARMSTART")   # Add -ws if WARMSTART is set
 fi
 
 # Add flag based on FIDELITY
 if [ "$FIDELITY" = False ]; then
     cmd_args+=(-ef)                # Add -ef if FIDELITY is False
 fi
-
+echo ${cmd_args[@]} # Print the constructed command arguments for debugging
 # Execute the python script with the constructed arguments
 python nosbench_stuff/nosbench_cluster.py "${cmd_args[@]}"
 

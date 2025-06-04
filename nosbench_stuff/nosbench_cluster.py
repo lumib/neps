@@ -1,6 +1,7 @@
 from nosbench.utils import prune_program
 from nosbench.program import Program
-from neps.space.new_space.nosbench_spaces import Nosbench_space, Nosbench_space_int
+from nosbench.optimizers import AdamW
+from neps.space.new_space.nosbench_spaces import Nosbench_space, Nosbench_space_int, optimizer_samplings
 import neps.space.new_space.space as space
 from pathlib import Path
 import math
@@ -98,6 +99,7 @@ def nosbench_neps_demo(
     optimizer.__name__ = optimizer_name  # Needed by NEPS later.
     root_directory = f"results/{dir_name if dir_name else 'nosbench'}"
     pprint.pprint(nosbench_dict)
+    print(optimizer)
 
     logging.basicConfig(level=logging.INFO)
     neps.run(
@@ -184,14 +186,22 @@ if __name__ == "__main__":
         default=None,
         help="Total cost to run, if applicable.",
     )
+    parser.add_argument(
+        "-ws", "--warmstart",
+        type=str,
+        default=None,
+        choices=["AdamW"],
+        help="Optimizer to use for warmstarting the NEPS run.",
+    )
     args = parser.parse_args()
 
     neps_dict = {
         "max_evaluations_total": args.max_evaluations_total,
         "max_cost_total": args.max_cost_total,
-        "optimizer": args.optimizer,
+        "optimizer": optimizers_dict[args.optimizer],
         "directory_name": args.dir_name,
         "summary_print_config": args.summary_print_config,
+        "warmstart": AdamW if args.warmstart=="AdamW" else None,
     }
     nosbench_dict = {
         "max_program_length": args.program_length,
@@ -204,8 +214,11 @@ if __name__ == "__main__":
     pipeline_space_int = Nosbench_space_int(**nosbench_dict)
     nosbench_dict["pipeline_space"] = pipeline_space if not args.pipeline_space_int else pipeline_space_int
 
+    if neps_dict["warmstart"] is not None:
+        neps_dict["optimizer"] = (partial(neps_dict["optimizer"][0], samplings_to_make=[(optimizer_samplings[neps_dict["warmstart"]],{"epochs": nosbench_dict["max_epochs_per_config"]})]), neps_dict["optimizer"][1])
+
     nosbench_neps_demo(
-        *optimizers_dict[neps_dict["optimizer"]],
+        *neps_dict["optimizer"],
         max_evaluations_total=neps_dict["max_evaluations_total"],
         max_cost_total=neps_dict["max_cost_total"],
         dir_name=neps_dict["directory_name"],
