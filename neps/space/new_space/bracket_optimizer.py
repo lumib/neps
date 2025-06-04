@@ -213,7 +213,7 @@ def priorband(
     *,
     eta: int = 3,
     sample_prior_first: bool | Literal["highest_fidelity"] = False,
-    samplings_to_make: list[Mapping[str, Any]] = [],
+    samplings_to_make: list[Tuple[Mapping[str, Any],Mapping[str, Any]]] = [],
     base: Literal["successive_halving", "hyperband", "asha", "async_hb"] = "hyperband",
 ) -> _BracketOptimizer:
     return _bracket_optimizer(

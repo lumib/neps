@@ -1,5 +1,6 @@
 from nosbench.program import Program, Instruction, Pointer
 from nosbench.function import Function, interpolate, bias_correct, clip, size
+from nosbench.optimizers import AdamW
 import torch
 
 from neps.space.new_space import space
@@ -253,122 +254,315 @@ class Nosbench_space_int(space.Pipeline):
             for instruction in args[:n_lines]
         ])
 
-adamw_samplings = ({
-    'Resolvable.program.args.resampled_categorical::categorical__20': 13,
-    'Resolvable.program.args[0].resampled_operation.args.resampled_categorical::categorical__3': 0,
-    'Resolvable.program.args[0].resampled_operation.args[0].resampled_categorical::categorical__16': 0,
-    'Resolvable.program.args[0].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[0].resampled_operation.args[1].resampled_categorical::categorical__3': 0,
-    'Resolvable.program.args[0].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 11,
 
-    'Resolvable.program.args[1].resampled_operation.args.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[1].resampled_operation.args[0].resampled_categorical::categorical__8': 4,
-    'Resolvable.program.args[1].resampled_operation.args[1].resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[1].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False': 3,
-    'Resolvable.program.args[1].resampled_operation.args[2].resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[1].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False': 5,
-    'Resolvable.program.args[1].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 9,
-
-    'Resolvable.program.args[2].resampled_operation.args.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[2].resampled_operation.args[0].resampled_categorical::categorical__8': 4,
-    'Resolvable.program.args[2].resampled_operation.args[1].resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[2].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False': 3,
-    'Resolvable.program.args[2].resampled_operation.args[2].resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[2].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False': 7,
-    'Resolvable.program.args[2].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 10,
-
-    'Resolvable.program.args[3].resampled_operation.args.resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[3].resampled_operation.args[0].resampled_categorical::categorical__2': 0,
-    'Resolvable.program.args[3].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 12,
-    'Resolvable.program.args[3].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[3].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[3].resampled_operation.args[2].resampled_categorical::categorical__3': 0,
-    'Resolvable.program.args[3].resampled_operation.args[3].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 9,
-    'Resolvable.program.args[3].resampled_operation.args[3].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[3].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 12,
-
-    'Resolvable.program.args[4].resampled_operation.args.resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[4].resampled_operation.args[0].resampled_categorical::categorical__2': 0,
-    'Resolvable.program.args[4].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 13,
-    'Resolvable.program.args[4].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[4].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 11,
-    'Resolvable.program.args[4].resampled_operation.args[2].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[4].resampled_operation.args[3].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 10,
-    'Resolvable.program.args[4].resampled_operation.args[3].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[4].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 13,
-
-    'Resolvable.program.args[5].resampled_operation.args.resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[5].resampled_operation.args[0].resampled_categorical::categorical__2': 1,
-    'Resolvable.program.args[5].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 12,
-    'Resolvable.program.args[5].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[5].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 9,
-    'Resolvable.program.args[5].resampled_operation.args[2].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[5].resampled_operation.args[3].resampled_categorical.sampled_value.resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[5].resampled_operation.args[3].resampled_categorical::categorical__3': 0,
-    'Resolvable.program.args[5].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 14,
-
-    'Resolvable.program.args[6].resampled_operation.args.resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[6].resampled_operation.args[0].resampled_categorical::categorical__2': 1,
-    'Resolvable.program.args[6].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 13,
-    'Resolvable.program.args[6].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[6].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 10,
-    'Resolvable.program.args[6].resampled_operation.args[2].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[6].resampled_operation.args[3].resampled_categorical.sampled_value.resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[6].resampled_operation.args[3].resampled_categorical::categorical__3': 0,
-    'Resolvable.program.args[6].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 15,
-
-    'Resolvable.program.args[7].resampled_operation.args.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[7].resampled_operation.args[0].resampled_categorical::categorical__8': 2,
-    'Resolvable.program.args[7].resampled_operation.args[1].resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[7].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False': 6,
-    'Resolvable.program.args[7].resampled_operation.args[2].resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[7].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False': 8,
-    'Resolvable.program.args[7].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 16,
-
-    'Resolvable.program.args[8].resampled_operation.args.resampled_categorical::categorical__3': 0,
-    'Resolvable.program.args[8].resampled_operation.args[0].resampled_categorical::categorical__16': 4,
-    'Resolvable.program.args[8].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[8].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 15,
-    'Resolvable.program.args[8].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 17,
-
-    'Resolvable.program.args[9].resampled_operation.args.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[9].resampled_operation.args[0].resampled_categorical::categorical__8': 3,
-    'Resolvable.program.args[9].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[9].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 17,
-    'Resolvable.program.args[9].resampled_operation.args[2].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[9].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 16,
-    'Resolvable.program.args[9].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 17,
-
-    'Resolvable.program.args[10].resampled_operation.args.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[10].resampled_operation.args[0].resampled_categorical::categorical__8': 1,
-    'Resolvable.program.args[10].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[10].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 14,
-    'Resolvable.program.args[10].resampled_operation.args[2].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[10].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 17,
-    'Resolvable.program.args[10].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 19,
-
-    'Resolvable.program.args[11].resampled_operation.args.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[11].resampled_operation.args[0].resampled_categorical::categorical__8': 2,
-    'Resolvable.program.args[11].resampled_operation.args[1].resampled_categorical::categorical__3': 0,
-    'Resolvable.program.args[11].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_categorical::categorical__3': 0,
-    'Resolvable.program.args[11].resampled_operation.args[2].resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[11].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False': 6,
-    'Resolvable.program.args[11].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 18,
-
-    'Resolvable.program.args[12].resampled_operation.args.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[12].resampled_operation.args[0].resampled_categorical::categorical__8': 3,
-    'Resolvable.program.args[12].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[12].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 19,
-    'Resolvable.program.args[12].resampled_operation.args[2].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[12].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 18,
-    'Resolvable.program.args[12].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 19,
-
-    'Resolvable.program.args[13].resampled_operation.args.resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[13].resampled_operation.args[0].resampled_categorical::categorical__8': 2,
-    'Resolvable.program.args[13].resampled_operation.args[1].resampled_categorical::categorical__3': 2,
-    'Resolvable.program.args[13].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False': 19,
-    'Resolvable.program.args[13].resampled_operation.args[2].resampled_categorical::categorical__3': 1,
-    'Resolvable.program.args[13].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False': 7,
-    'Resolvable.program.args[13].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False': 19,
-},
-{'epochs': 20})
+optimizer_samplings = {
+    AdamW: {
+        "Resolvable.program.args.resampled_categorical::categorical__20": 13,
+        "Resolvable.program.args[0].resampled_operation.args.resampled_categorical::categorical__3": (
+            0
+        ),
+        "Resolvable.program.args[0].resampled_operation.args[0].resampled_categorical::categorical__16": (
+            0
+        ),
+        "Resolvable.program.args[0].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[0].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            0
+        ),
+        "Resolvable.program.args[0].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            11
+        ),
+        "Resolvable.program.args[1].resampled_operation.args.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[1].resampled_operation.args[0].resampled_categorical::categorical__8": (
+            4
+        ),
+        "Resolvable.program.args[1].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[1].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False": (
+            3
+        ),
+        "Resolvable.program.args[1].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[1].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False": (
+            5
+        ),
+        "Resolvable.program.args[1].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            9
+        ),
+        "Resolvable.program.args[2].resampled_operation.args.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[2].resampled_operation.args[0].resampled_categorical::categorical__8": (
+            4
+        ),
+        "Resolvable.program.args[2].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[2].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False": (
+            3
+        ),
+        "Resolvable.program.args[2].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[2].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False": (
+            7
+        ),
+        "Resolvable.program.args[2].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            10
+        ),
+        "Resolvable.program.args[3].resampled_operation.args.resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[3].resampled_operation.args[0].resampled_categorical::categorical__2": (
+            0
+        ),
+        "Resolvable.program.args[3].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            12
+        ),
+        "Resolvable.program.args[3].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[3].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[3].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            0
+        ),
+        "Resolvable.program.args[3].resampled_operation.args[3].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            9
+        ),
+        "Resolvable.program.args[3].resampled_operation.args[3].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[3].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            12
+        ),
+        "Resolvable.program.args[4].resampled_operation.args.resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[4].resampled_operation.args[0].resampled_categorical::categorical__2": (
+            0
+        ),
+        "Resolvable.program.args[4].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            13
+        ),
+        "Resolvable.program.args[4].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[4].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            11
+        ),
+        "Resolvable.program.args[4].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[4].resampled_operation.args[3].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            10
+        ),
+        "Resolvable.program.args[4].resampled_operation.args[3].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[4].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            13
+        ),
+        "Resolvable.program.args[5].resampled_operation.args.resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[5].resampled_operation.args[0].resampled_categorical::categorical__2": (
+            1
+        ),
+        "Resolvable.program.args[5].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            12
+        ),
+        "Resolvable.program.args[5].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[5].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            9
+        ),
+        "Resolvable.program.args[5].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[5].resampled_operation.args[3].resampled_categorical.sampled_value.resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[5].resampled_operation.args[3].resampled_categorical::categorical__3": (
+            0
+        ),
+        "Resolvable.program.args[5].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            14
+        ),
+        "Resolvable.program.args[6].resampled_operation.args.resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[6].resampled_operation.args[0].resampled_categorical::categorical__2": (
+            1
+        ),
+        "Resolvable.program.args[6].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            13
+        ),
+        "Resolvable.program.args[6].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[6].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            10
+        ),
+        "Resolvable.program.args[6].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[6].resampled_operation.args[3].resampled_categorical.sampled_value.resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[6].resampled_operation.args[3].resampled_categorical::categorical__3": (
+            0
+        ),
+        "Resolvable.program.args[6].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            15
+        ),
+        "Resolvable.program.args[7].resampled_operation.args.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[7].resampled_operation.args[0].resampled_categorical::categorical__8": (
+            2
+        ),
+        "Resolvable.program.args[7].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[7].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False": (
+            6
+        ),
+        "Resolvable.program.args[7].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[7].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False": (
+            8
+        ),
+        "Resolvable.program.args[7].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            16
+        ),
+        "Resolvable.program.args[8].resampled_operation.args.resampled_categorical::categorical__3": (
+            0
+        ),
+        "Resolvable.program.args[8].resampled_operation.args[0].resampled_categorical::categorical__16": (
+            4
+        ),
+        "Resolvable.program.args[8].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[8].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            15
+        ),
+        "Resolvable.program.args[8].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            17
+        ),
+        "Resolvable.program.args[9].resampled_operation.args.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[9].resampled_operation.args[0].resampled_categorical::categorical__8": (
+            3
+        ),
+        "Resolvable.program.args[9].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[9].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            17
+        ),
+        "Resolvable.program.args[9].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[9].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            16
+        ),
+        "Resolvable.program.args[9].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            17
+        ),
+        "Resolvable.program.args[10].resampled_operation.args.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[10].resampled_operation.args[0].resampled_categorical::categorical__8": (
+            1
+        ),
+        "Resolvable.program.args[10].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[10].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            14
+        ),
+        "Resolvable.program.args[10].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[10].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            17
+        ),
+        "Resolvable.program.args[10].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            19
+        ),
+        "Resolvable.program.args[11].resampled_operation.args.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[11].resampled_operation.args[0].resampled_categorical::categorical__8": (
+            2
+        ),
+        "Resolvable.program.args[11].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            0
+        ),
+        "Resolvable.program.args[11].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_categorical::categorical__3": (
+            0
+        ),
+        "Resolvable.program.args[11].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[11].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False": (
+            6
+        ),
+        "Resolvable.program.args[11].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            18
+        ),
+        "Resolvable.program.args[12].resampled_operation.args.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[12].resampled_operation.args[0].resampled_categorical::categorical__8": (
+            3
+        ),
+        "Resolvable.program.args[12].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[12].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            19
+        ),
+        "Resolvable.program.args[12].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[12].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            18
+        ),
+        "Resolvable.program.args[12].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            19
+        ),
+        "Resolvable.program.args[13].resampled_operation.args.resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[13].resampled_operation.args[0].resampled_categorical::categorical__8": (
+            2
+        ),
+        "Resolvable.program.args[13].resampled_operation.args[1].resampled_categorical::categorical__3": (
+            2
+        ),
+        "Resolvable.program.args[13].resampled_operation.args[1].resampled_categorical.sampled_value.resampled_integer::integer__9_20_False": (
+            19
+        ),
+        "Resolvable.program.args[13].resampled_operation.args[2].resampled_categorical::categorical__3": (
+            1
+        ),
+        "Resolvable.program.args[13].resampled_operation.args[2].resampled_categorical.sampled_value.resampled_integer::integer__3_8_False": (
+            7
+        ),
+        "Resolvable.program.args[13].resampled_operation.kwargs{store}.resampled_integer::integer__9_20_False": (
+            19
+        ),
+    }
+}
