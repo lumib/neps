@@ -54,22 +54,23 @@ class PriorBandSampler:
         # i.e. resources for rung 2 discounts the cost of evaluating to rung 1,
         # only counting the difference in fidelity cost between rung 2 and rung 1.
         cost_per_rung = {i: rung_to_fid[i] - rung_to_fid.get(i - 1, 0) for i in rung_to_fid}
-
         cost_of_one_sh_bracket = sum(rung_sizes[r] * cost_per_rung[r] for r in rung_sizes)
-        current_cost_used = sum(r * cost_per_rung[r] for r in completed_rungs)
+        current_cost_used = sum(completed_rungs.value_counts()[r] * cost_per_rung[r] for r in completed_rungs.value_counts().index)
         spent_one_sh_bracket_worth_of_fidelity = current_cost_used >= cost_of_one_sh_bracket
+
 
         # Check that there is at least rung with `eta` evaluations
         rung_counts = completed.groupby("rung").size()
-        any_rung_with_eta_evals = (rung_counts == self.eta).any()
+        any_rung_with_eta_evals = (rung_counts >= self.eta).any()
 
         # If the conditions are not met, we sample from the prior or randomly depending on
         # the geometrically distributed prior and uniform weights
         if (
-            one_complete_run_at_max_rung is False
-            or spent_one_sh_bracket_worth_of_fidelity is False
-            or any_rung_with_eta_evals is False
+            not one_complete_run_at_max_rung
+            or not spent_one_sh_bracket_worth_of_fidelity
+            or not any_rung_with_eta_evals
         ):
+            print("Early sampling from prior or random")
             policy = np.random.choice(["prior", "random"], p=[w_prior, w_random])
             match policy:
                 case "prior":
@@ -83,15 +84,16 @@ class PriorBandSampler:
 
         # 1. Select the top `1//eta` percent of configs at the highest rung supporting it
         rungs_with_at_least_eta = rung_counts[rung_counts >= self.eta].index  # type: ignore
+        print(f"Rungs with at least {self.eta} evaluations: {rungs_with_at_least_eta}")
         rung_table: pd.DataFrame = completed[  # type: ignore
             completed.index.get_level_values("rung") == rungs_with_at_least_eta.max()
         ]
 
         K = len(rung_table) // self.eta
         top_k_configs = rung_table.nsmallest(K, columns=["perf"])["config"].tolist()
-
         # 2. Get the global incumbent
         inc_config = completed.loc[completed["perf"].idxmin()]["config"]
+        print(f"Incumbent config: {completed.loc[completed["perf"].idxmin()]}")
 
         # 3. Calculate a ratio score of how likely each of the top K configs are under
         # the prior and inc distribution, weighing them by their position in the top K

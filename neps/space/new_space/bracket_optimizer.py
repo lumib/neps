@@ -77,7 +77,6 @@ class _BracketOptimizer:
                     predefined_samplings=self.samplings_to_make[len(trials)][0]
                     ),
                 environment_values=self.samplings_to_make[len(trials)][1],)
-            print(_resolved_pipeline)
             return SampledConfig(id=f"{len(trials)+1}_{rung}", config=new_space.NepsCompatConverter.to_neps_config(resolution_context,))
 
         # If we have no trials, we either go with the prior or just a sampled config
@@ -108,12 +107,13 @@ class _BracketOptimizer:
         if self.sample_prior_first == "highest_fidelity":
             table = table.iloc[1:]
 
-        if len(self.samplings_to_make) > 0:
-            table = table.iloc[len(self.samplings_to_make):]
+        # if len(self.samplings_to_make) > 0:
+        #     table = table.iloc[len(self.samplings_to_make):]
 
         # Get and execute the next action from our brackets that are not pending or done
         assert isinstance(table, pd.DataFrame)
         brackets = self.create_brackets(table)
+        print(f"Brackets: {brackets}")
 
         if not isinstance(brackets, Sequence):
             brackets = [brackets]
