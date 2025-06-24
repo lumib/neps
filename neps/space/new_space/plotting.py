@@ -111,7 +111,7 @@ def plot_experiments_ranks(path:Path, ylabel, xlabel, title, ax = plt.subplots()
         group_dfs[i] = group_df
     for seed in range(min_seeds):
         seed_df = pd.concat([df.iloc[:, seed] for df in group_dfs], axis=1)
-        for group in range(len(group_dfs)):
+        for group, _ in enumerate(group_dfs):
             group_dfs[group].iloc[:, seed] = seed_df.rank(1).iloc[:, group]
 
     for group, group_df in enumerate(group_dfs):

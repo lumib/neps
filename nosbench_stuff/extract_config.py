@@ -10,7 +10,7 @@ import yaml
 
 # experiment_name = "nosbench_new__priorband+async_hb_4_GPU_100k_wo_Overwrite"
 experiment_name = "2_5k_w_warmstart"
-config_id = "1_2"
+config_id = "802_2"
 MAX_PROGRAM_LENGTH = 20
 MAX_EPOCHS_PER_CONFIG = 20
 AVAILABLE_VARIABLE_SLOTS = 11
